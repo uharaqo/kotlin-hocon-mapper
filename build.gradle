@@ -38,22 +38,23 @@ allprojects {
     test {
         useJUnitPlatform()
     }
+}
 
-    task codeCoverageReport(type: JacocoReport) {
-        executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+task codeCoverageReport(type: JacocoReport) {
+    // Gather execution data from all subprojects
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
-        subprojects.each {
-            sourceSets it.sourceSets.main
-        }
+    // Add all relevant sourcesets from the subprojects
+    subprojects.each { sourceSets it.sourceSets.main }
 
-        reports {
-            xml.enabled true
-            xml.destination file("${buildDir}/reports/jacoco/report.xml")
-            html.enabled false
-            csv.enabled false
-        }
+    reports {
+        xml.enabled true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+        html.enabled false
+        csv.enabled false
     }
-    codeCoverageReport.dependsOn {
-        subprojects*.test
-    }
+}
+// always run the tests before generating the report
+codeCoverageReport.dependsOn {
+    subprojects*.test
 }
