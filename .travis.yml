@@ -8,18 +8,21 @@ os:
 
 jdk:
   - oraclejdk8
-  - openjdk11
 
 before_script:
-  - echo JAVA_HOME = ${JAVA_HOME}
-  - echo PATH = ${PATH}
+  - java -version
+  - chmod +x gradlew
 
 script:
-  - java -version
+  - ./gradlew check
+  - ./gradlew codeCoverageReport
 
 after_script:
   - ls ${JAVA_HOME}
   - cat "${JAVA_HOME}/release"
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 
 # configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
 before_cache:
