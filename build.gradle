@@ -11,7 +11,7 @@ buildscript {
     }
 }
 
-subprojects {
+allprojects {
     apply plugin: 'kotlin'
     apply from: "$rootDir/ktlint.gradle"
     apply plugin: 'jacoco'
@@ -51,18 +51,18 @@ subprojects {
         outputFormat = 'javadoc'
         outputDirectory = javadoc.destinationDir
     }
-    task dokkaJar(type: Jar, dependsOn: 'dokka') {
+    task dokkaJar(type: Jar, dependsOn: dokka) {
         classifier 'kdoc'
         from fileTree(new File(project.buildDir, 'kdoc'))
     }
-    task javadocJar(type: Jar, dependsOn: dokka) {
+    task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
         classifier 'javadoc'
         from javadoc.destinationDir
     }
 }
 
 // coverage
-task codeCoverageReport(type: JacocoReport) {
+task coverageReport(type: JacocoReport) {
     // Gather execution data from all subprojects
     executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
@@ -76,7 +76,4 @@ task codeCoverageReport(type: JacocoReport) {
         csv.enabled false
     }
 }
-// always run the tests before generating the report
-codeCoverageReport.dependsOn {
-    subprojects*.test
-}
+coverageReport.dependsOn { subprojects*.test }

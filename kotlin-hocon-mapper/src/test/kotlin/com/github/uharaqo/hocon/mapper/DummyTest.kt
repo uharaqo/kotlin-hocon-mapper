@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 class DummyTest {
 
     @Test
-    fun test() {
+    fun testZZZ() {
         Dummy().hello() shouldBe "hello"
     }
 }
