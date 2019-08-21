@@ -1,9 +1,25 @@
 language: java
 
+sudo: false
+dist: trusty
+
+os:
+  - linux
+
 jdk:
   - oraclejdk8
+  - openjdk11
 
-sudo: false
+before_script:
+  - echo JAVA_HOME = ${JAVA_HOME}
+  - echo PATH = ${PATH}
+
+script:
+  - java -version
+
+after_script:
+  - ls ${JAVA_HOME}
+  - cat "${JAVA_HOME}/release"
 
 # configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
 before_cache:
