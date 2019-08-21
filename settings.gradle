@@ -1,0 +1,3 @@
+rootProject.name = 'kotlin-hocon-mapper-parent'
+
+include "kotlin-hocon-mapper"

@@ -1,0 +1,38 @@
+language: java
+
+sudo: false
+dist: trusty
+
+os:
+  - linux
+
+jdk:
+  - oraclejdk8
+
+before_script:
+  - java -version
+  - chmod +x gradlew
+
+script:
+  - ./gradlew check
+  - ./gradlew build
+  - ./gradlew dokkaJar javadocJar
+  - ./gradlew coverageReport
+
+after_script:
+  - ls ${JAVA_HOME}
+  - cat "${JAVA_HOME}/release"
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+# configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+# format from https://docs.travis-ci.com/user/caching/#Enabling-multiple-caching-features
+cache:
+  bundler: true
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper

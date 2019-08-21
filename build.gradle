@@ -1,0 +1,79 @@
+group "com.github.uharaqo"
+version "0.0.1"
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+    }
+}
+
+allprojects {
+    apply plugin: 'kotlin'
+    apply from: "$rootDir/ktlint.gradle"
+    apply plugin: 'jacoco'
+    apply plugin: 'org.jetbrains.dokka'
+
+    repositories {
+        mavenLocal()
+        jcenter()
+        mavenCentral()
+    }
+
+    // compile
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+
+    // test
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+        }
+    }
+    test {
+        useJUnitPlatform()
+    }
+
+    // source
+    dokka {
+        outputFormat = 'html'
+        outputDirectory = "$buildDir/kdoc"
+    }
+    task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+        outputFormat = 'javadoc'
+        outputDirectory = javadoc.destinationDir
+    }
+    task dokkaJar(type: Jar, dependsOn: dokka) {
+        classifier 'kdoc'
+        from fileTree(new File(project.buildDir, 'kdoc'))
+    }
+    task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+        classifier 'javadoc'
+        from javadoc.destinationDir
+    }
+}
+
+// coverage
+task coverageReport(type: JacocoReport) {
+    // Gather execution data from all subprojects
+    executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+    // Add all relevant sourcesets from the subprojects
+    subprojects.each { sourceSets it.sourceSets.main }
+
+    reports {
+        xml.enabled true
+        xml.destination file("${buildDir}/reports/jacoco/report.xml")
+        html.enabled false
+        csv.enabled false
+    }
+}
+coverageReport.dependsOn { subprojects*.test }
