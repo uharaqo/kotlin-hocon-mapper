@@ -15,7 +15,9 @@ before_script:
 
 script:
   - ./gradlew check
-  - ./gradlew codeCoverageReport
+  - ./gradlew build
+  - ./gradlew dokkaJar javadocJar
+  - ./gradlew coverageReport
 
 after_script:
   - ls ${JAVA_HOME}
