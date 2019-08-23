@@ -3,6 +3,7 @@ package com.github.uharaqo.hocon.mapper
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigObject
 import com.typesafe.config.ConfigValue
+import com.typesafe.config.ConfigValueFactory
 import com.typesafe.config.ConfigValueType
 import kotlinx.serialization.CompositeDecoder
 import kotlinx.serialization.KSerializer
@@ -71,14 +72,17 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
 
     private fun getText(tag: T): String = unwrapAs(tag, ConfigValueType.STRING)
     private fun getNumber(tag: T): Number = unwrapAs(tag, ConfigValueType.NUMBER)
-    private inline fun <reified E : Any> unwrapAs(tag: T, valueType: ConfigValueType): E {
-        return getValue(tag).let {
-            if (it.valueType() == valueType) it.unwrapped() as E
-            else throw SerializationException(
-                "Expected $valueType type but got ${it.valueType()}. value: ${it.origin().description()}"
-            )
+
+    private inline fun <reified E : Any> unwrapAs(tag: T, valueType: ConfigValueType): E =
+        getValue(tag).let {
+            if (it.valueType() == valueType)
+                it.unwrapped() as E
+            else
+                throw SerializationException(
+                    "Expected $valueType type but got ${it.valueType()}: " +
+                            "${it.unwrapped()} (${it.origin().description()})"
+                )
         }
-    }
 
     protected abstract fun getValue(tag: T): ConfigValue
     private inline fun <reified E : Any> getValueAs(tag: T): E = getValue(tag) as E
@@ -88,12 +92,24 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
         return when (desc.kind) {
             StructureKind.LIST, UnionKind.POLYMORPHIC ->
                 ConfigListDecoder(getValueAs(currentTag))
-            StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED -> {
-                if (this is ConfigDecoder) return this
-                val obj: ConfigObject = getValueAs(currentTag)
-                ConfigDecoder(obj.toConfig())
-            }
-            else -> this
+            StructureKind.MAP ->
+                ConfigListDecoder(flattenEntries(getValueAs(currentTag)))
+            StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED ->
+                return if (this is ConfigDecoder)
+                    this
+                else
+                    ConfigDecoder(getValueAs<ConfigObject>(currentTag).toConfig())
+            else ->
+                this
         }
     }
+
+    private fun flattenEntries(config: Map<String, ConfigValue>): List<ConfigValue> =
+        config.entries
+            .fold(mutableListOf()) { acc, entry ->
+                acc.add(ConfigValueFactory.fromAnyRef(entry.key))
+                acc.add(entry.value)
+
+                acc
+            }
 }
