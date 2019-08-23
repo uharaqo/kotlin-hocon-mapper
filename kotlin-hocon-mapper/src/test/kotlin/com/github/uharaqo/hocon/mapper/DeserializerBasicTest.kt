@@ -9,7 +9,7 @@ import kotlinx.serialization.decode
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 
-class DeserializerTest {
+class DeserializerBasicTest {
 
     @Serializable
     private data class Simple(
@@ -66,6 +66,25 @@ class DeserializerTest {
         result.float shouldBe Float.MAX_VALUE
         result.double shouldBe Double.MAX_VALUE
         result.enum shouldBe DataEnum.ELEMENT
+    }
+
+    @Test
+    fun `nested objects can be parsed`() {
+
+        @Serializable
+        data class IntVal(val int: Int)
+
+        @Serializable
+        data class ObjInObj(val intVal: IntVal)
+
+        // given
+        val config = ConfigFactory.parseString("""{intVal: {int: ${Int.MAX_VALUE}}}""")
+
+        // when
+        val result = ConfigDecoder(config).decode(ObjInObj.serializer())
+
+        // then
+        result.intVal.int shouldBe Int.MAX_VALUE
     }
 
     @Test

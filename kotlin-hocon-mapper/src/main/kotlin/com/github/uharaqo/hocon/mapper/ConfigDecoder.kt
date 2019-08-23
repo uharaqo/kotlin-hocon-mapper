@@ -1,48 +1,99 @@
 package com.github.uharaqo.hocon.mapper
 
 import com.typesafe.config.Config
+import com.typesafe.config.ConfigObject
 import com.typesafe.config.ConfigValue
+import com.typesafe.config.ConfigValueType
+import kotlinx.serialization.CompositeDecoder
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.StructureKind
 import kotlinx.serialization.TaggedDecoder
+import kotlinx.serialization.UnionKind
 import kotlinx.serialization.getElementIndexOrThrow
 import kotlinx.serialization.internal.EnumDescriptor
 
-class ConfigDecoder(private val config: Config) : TaggedDecoder<String>() {
-
-    override fun decodeTaggedChar(tag: String) =
-        config.getString(tag).firstOrNull()
-            ?: throw SerializationException("invalid") // TODO: message
-
-    override fun decodeTaggedString(tag: String): String = config.getString(tag); // TODO: NPE
-
-    override fun decodeTaggedBoolean(tag: String) = config.getBoolean(tag)
-
-    override fun decodeTaggedByte(tag: String) = decodeTaggedInt(tag).toByte()
-
-    override fun decodeTaggedInt(tag: String) = config.getInt(tag)
-
-    override fun decodeTaggedLong(tag: String) = config.getLong(tag)
-
-    override fun decodeTaggedShort(tag: String) = decodeTaggedDouble(tag).toShort()
-
-    override fun decodeTaggedFloat(tag: String) = decodeTaggedDouble(tag).toFloat()
-
-    override fun decodeTaggedDouble(tag: String) = config.getDouble(tag)
-
-    override fun decodeTaggedEnum(tag: String, enumDescription: EnumDescriptor) =
-        enumDescription.getElementIndexOrThrow(config.getString(tag))
-
-    override fun decodeTaggedUnit(tag: String) = Unit
-
-    override fun decodeTaggedValue(tag: String): ConfigValue = config.getValue(tag)
+class ConfigDecoder(private val config: Config) : ConfigDecoderBase<String>() {
 
     override fun decodeTaggedNotNullMark(tag: String) = !config.getIsNull(tag)
 
     override fun SerialDescriptor.getTag(index: Int): String {
-        return getElementName(index)
+        val parentTag = currentTagOrNull ?: ""
+        val childTag = getElementName(index)
+        val path = if (parentTag.isNotEmpty()) "$parentTag.$childTag" else childTag
+        return path
             .also { if (!config.hasPath(it)) throw MissingFieldException(it) }
     }
 
+    override fun getValue(tag: String): ConfigValue = config.getValue(tag)
+}
+
+internal class ConfigListDecoder(private val list: List<ConfigValue>) :
+    ConfigDecoderBase<Int>() {
+
+    private var idx = 0
+
+    override fun SerialDescriptor.getTag(index: Int) = index
+
+    override fun decodeCollectionSize(desc: SerialDescriptor) = list.size
+
+    override fun decodeElementIndex(desc: SerialDescriptor) =
+        (if (idx < list.size) idx else CompositeDecoder.READ_DONE)
+            .also { idx++ }
+
+    override fun getValue(tag: Int): ConfigValue = list[tag]
+}
+
+abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
+
+    override fun decodeTaggedValue(tag: T): Any = getValue(tag).unwrapped()
+
+    override fun decodeTaggedString(tag: T): String = getText(tag)
+    override fun decodeTaggedChar(tag: T) =
+        getText(tag).firstOrNull() ?: throw SerializationException("$tag is empty")
+
+    override fun decodeTaggedEnum(tag: T, enumDescription: EnumDescriptor) =
+        enumDescription.getElementIndexOrThrow(getText(tag))
+
+    override fun decodeTaggedBoolean(tag: T): Boolean =
+        unwrapAs(tag, ConfigValueType.BOOLEAN)
+
+    override fun decodeTaggedByte(tag: T) = getNumber(tag).toByte()
+    override fun decodeTaggedInt(tag: T) = getNumber(tag).toInt()
+    override fun decodeTaggedLong(tag: T) = getNumber(tag).toLong()
+    override fun decodeTaggedShort(tag: T) = getNumber(tag).toShort()
+    override fun decodeTaggedFloat(tag: T) = getNumber(tag).toFloat()
+    override fun decodeTaggedDouble(tag: T) = getNumber(tag).toDouble()
+
+    override fun decodeTaggedUnit(tag: T) {}
+
+    private fun getText(tag: T): String = unwrapAs(tag, ConfigValueType.STRING)
+    private fun getNumber(tag: T): Number = unwrapAs(tag, ConfigValueType.NUMBER)
+    private inline fun <reified E : Any> unwrapAs(tag: T, valueType: ConfigValueType): E {
+        return getValue(tag).let {
+            if (it.valueType() == valueType) it.unwrapped() as E
+            else throw SerializationException(
+                "Expected $valueType type but got ${it.valueType()}. value: ${it.origin().description()}"
+            )
+        }
+    }
+
+    protected abstract fun getValue(tag: T): ConfigValue
+    private inline fun <reified E : Any> getValueAs(tag: T): E = getValue(tag) as E
+
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>)
+            : CompositeDecoder {
+        return when (desc.kind) {
+            StructureKind.LIST, UnionKind.POLYMORPHIC ->
+                ConfigListDecoder(getValueAs(currentTag))
+            StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED -> {
+                if (this is ConfigDecoder) return this
+                val obj: ConfigObject = getValueAs(currentTag)
+                ConfigDecoder(obj.toConfig())
+            }
+            else -> this
+        }
+    }
 }
