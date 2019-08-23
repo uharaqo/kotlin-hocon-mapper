@@ -138,4 +138,25 @@ class DeserializerBasicTest {
         // then
         result.string shouldBe "abc"
     }
+
+    @Test
+    fun `nested objects can be deserialized`() {
+        @Serializable
+        data class C(val bool: Boolean)
+
+        @Serializable
+        data class B(val c: C)
+
+        @Serializable
+        data class A(val b: B)
+
+        // given
+        val config = ConfigFactory.parseString("""{b: {c: {bool: true}}}""")
+
+        // when
+        val result = ConfigDecoder(config).decode(A.serializer())
+
+        // then
+        result.b.c.bool shouldBe true
+    }
 }

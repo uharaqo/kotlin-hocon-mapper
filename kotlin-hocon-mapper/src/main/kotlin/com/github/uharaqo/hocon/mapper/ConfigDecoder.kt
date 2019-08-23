@@ -49,8 +49,6 @@ internal class ConfigListDecoder(private val list: List<ConfigValue>) :
 
 abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
 
-    override fun decodeTaggedValue(tag: T): Any = getValue(tag).unwrapped()
-
     override fun decodeTaggedString(tag: T): String = getText(tag)
     override fun decodeTaggedChar(tag: T) =
         getText(tag).firstOrNull() ?: throw SerializationException("$tag is empty")
@@ -68,10 +66,10 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
     override fun decodeTaggedFloat(tag: T) = getNumber(tag).toFloat()
     override fun decodeTaggedDouble(tag: T) = getNumber(tag).toDouble()
 
-    override fun decodeTaggedUnit(tag: T) {}
-
     private fun getText(tag: T): String = unwrapAs(tag, ConfigValueType.STRING)
     private fun getNumber(tag: T): Number = unwrapAs(tag, ConfigValueType.NUMBER)
+
+    override fun decodeTaggedValue(tag: T): Any = getValue(tag).unwrapped()
 
     private inline fun <reified E : Any> unwrapAs(tag: T, valueType: ConfigValueType): E =
         getValue(tag).let {
@@ -87,22 +85,22 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
     protected abstract fun getValue(tag: T): ConfigValue
     private inline fun <reified E : Any> getValueAs(tag: T): E = getValue(tag) as E
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>)
-            : CompositeDecoder {
-        return when (desc.kind) {
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>) =
+        when (desc.kind) {
             StructureKind.LIST, UnionKind.POLYMORPHIC ->
                 ConfigListDecoder(getValueAs(currentTag))
+
             StructureKind.MAP ->
                 ConfigListDecoder(flattenEntries(getValueAs(currentTag)))
+
             StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED ->
-                return if (this is ConfigDecoder)
+                if (this is ConfigDecoder)
                     this
                 else
                     ConfigDecoder(getValueAs<ConfigObject>(currentTag).toConfig())
-            else ->
-                this
+
+            else -> this
         }
-    }
 
     private fun flattenEntries(config: Map<String, ConfigValue>): List<ConfigValue> =
         config.entries
