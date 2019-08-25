@@ -5,7 +5,6 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decode
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 
@@ -53,7 +52,7 @@ class DeserializerBasicTest {
         )
 
         // when
-        val result = ConfigDecoder(config).decode(Primitives.serializer())
+        val result = Primitives.serializer().load(config)
 
         // then
         result.char shouldBe 'a'
@@ -81,7 +80,7 @@ class DeserializerBasicTest {
         val config = ConfigFactory.parseString("""{intVal: {int: ${Int.MAX_VALUE}}}""")
 
         // when
-        val result = ConfigDecoder(config).decode(ObjInObj.serializer())
+        val result = ObjInObj.serializer().load(config)
 
         // then
         result.intVal.int shouldBe Int.MAX_VALUE
@@ -94,7 +93,7 @@ class DeserializerBasicTest {
 
         // when / then
         shouldThrow<MissingFieldException> {
-            ConfigDecoder(config).decode(Simple.serializer())
+            Simple.serializer().load(config)
         }
     }
 
@@ -133,7 +132,7 @@ class DeserializerBasicTest {
         val config = ConfigFactory.parseString("""{"string": "abc", "unknown": 123}""")
 
         // when
-        val result = ConfigDecoder(config).decode(Simple.serializer())
+        val result = Simple.serializer().load(config)
 
         // then
         result.string shouldBe "abc"
@@ -154,7 +153,7 @@ class DeserializerBasicTest {
         val config = ConfigFactory.parseString("""{b: {c: {bool: true}}}""")
 
         // when
-        val result = ConfigDecoder(config).decode(A.serializer())
+        val result = A.serializer().load(config)
 
         // then
         result.b.c.bool shouldBe true
