@@ -3,7 +3,6 @@ package com.github.uharaqo.hocon.mapper
 import com.typesafe.config.ConfigFactory
 import io.kotlintest.shouldBe
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decode
 import org.junit.jupiter.api.Test
 
 class DeserializerListTest {
@@ -45,7 +44,7 @@ class DeserializerListTest {
         )
 
         // when
-        val result = ConfigDecoder(config).decode(PrimitiveLists.serializer())
+        val result = PrimitiveLists.serializer().load(config)
 
         // then
         result.char[0] shouldBe 'a'
@@ -79,7 +78,7 @@ class DeserializerListTest {
         )
 
         // when
-        val result = ConfigDecoder(config).decode(NestedList.serializer())
+        val result = NestedList.serializer().load(config)
 
         // then
         result.ints[0][0] shouldBe Int.MIN_VALUE
@@ -108,7 +107,7 @@ class DeserializerListTest {
         )
 
         // when
-        val result = ConfigDecoder(config).decode(NestedList.serializer())
+        val result = NestedList.serializer().load(config)
 
         // then
         result.ints[0].int shouldBe Int.MAX_VALUE

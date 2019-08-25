@@ -5,7 +5,6 @@ import io.kotlintest.should
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decode
 import org.junit.jupiter.api.Test
 
 class DeserializerMapTest {
@@ -60,7 +59,7 @@ class DeserializerMapTest {
         )
 
         // when
-        val result = ConfigDecoder(config).decode(PrimitiveListsMap.serializer())
+        val result = PrimitiveListsMap.serializer().load(config)
 
         // then
         val nullableMap = result.map["123"]
