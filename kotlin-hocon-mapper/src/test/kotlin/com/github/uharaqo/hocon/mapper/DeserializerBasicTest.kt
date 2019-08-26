@@ -1,5 +1,14 @@
+@file:UseSerializers(
+    PeriodSerializer::class,
+    DurationSerializer::class,
+    ConfigMemorySizeSerializer::class
+)
+
 package com.github.uharaqo.hocon.mapper
 
+import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.AdditionalModels.Durations
+import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.AdditionalModels.MemSizes
+import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.AdditionalModels.Periods
 import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.BasicModels.BasicTypes
 import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.BasicModels.SampleEnum
 import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.BasicModels.SimpleObj
@@ -10,11 +19,13 @@ import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.CollectionModels.Ob
 import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.NestedModels.Inner
 import com.github.uharaqo.hocon.mapper.DeserializerBasicTest.NestedModels.Outer
 import com.typesafe.config.ConfigFactory
+import com.typesafe.config.ConfigMemorySize
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -23,7 +34,10 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.time.Duration
+import java.time.Period
 import java.util.stream.Stream
+import kotlin.math.pow
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeserializerBasicTest {
@@ -77,6 +91,28 @@ class DeserializerBasicTest {
         @Serializable
         data class ObjectListMap(
             val map: Map<String, ObjectList>
+        )
+    }
+
+    interface AdditionalModels {
+
+        @Serializable
+        data class Periods(
+            val period1: Period, val period2: Period, val period3: Period, val period4: Period
+        )
+
+        @Serializable
+        data class Durations(
+            val duration1: Duration, val duration2: Duration, val duration3: Duration,
+            val duration4: Duration, val duration5: Duration, val duration6: Duration,
+            val duration7: Duration
+        )
+
+        @Serializable
+        data class MemSizes(
+            val mem1: ConfigMemorySize, val mem2: ConfigMemorySize, val mem3: ConfigMemorySize,
+            val mem4: ConfigMemorySize, val mem5: ConfigMemorySize, val mem6: ConfigMemorySize,
+            val mem7: ConfigMemorySize
         )
     }
 
@@ -233,8 +269,65 @@ class DeserializerBasicTest {
                 |  }
                 |}
                 """.trimMargin()
+            ),
+
+            arguments(
+                "periods",
+                Periods.serializer(),
+                Periods(
+                    Period.ofDays(1), Period.ofWeeks(1), Period.ofMonths(1), Period.ofYears(1)
+                ),
+                """{
+                |  period1: 1d,
+                |  period2: 1w,
+                |  period3: 1m,
+                |  period4: 1y
+                |}
+                """.trimMargin()
+            ),
+
+            arguments(
+                "durations",
+                Durations.serializer(),
+                Durations(
+                    Duration.ofNanos(1), Duration.ofNanos(1000), Duration.ofMillis(1),
+                    Duration.ofSeconds(1), Duration.ofMinutes(1), Duration.ofHours(1),
+                    Duration.ofDays(1)
+                ),
+                """{
+                |  duration1: 1ns,
+                |  duration2: 1us,
+                |  duration3: 1ms,
+                |  duration4: 1s,
+                |  duration5: 1m,
+                |  duration6: 1h,
+                |  duration7: 1d
+                |}
+                """.trimMargin()
+            ),
+
+            arguments(
+                "memory sizes",
+                MemSizes.serializer(),
+                MemSizes(
+                    memSize(0), memSize(1), memSize(2), memSize(3),
+                    memSize(4), memSize(5), memSize(6)
+                ),
+                """{
+                |  mem1: 1B,
+                |  mem2: 1KiB,
+                |  mem3: 1MiB,
+                |  mem4: 1GiB,
+                |  mem5: 1TiB,
+                |  mem6: 1PiB,
+                |  mem7: 1EiB
+                |}
+                """.trimMargin()
             )
         )
+
+        private fun memSize(nPow: Int) =
+            ConfigMemorySize.ofBytes(1024.0.pow(nPow.toDouble()).toLong())
 
         @DisplayName("Deserializer")
         @ParameterizedTest(name = "[{index}] {0}")
@@ -320,5 +413,43 @@ class DeserializerBasicTest {
             // then
             result shouldBe SimpleObj("foo")
         }
+    }
+
+
+    @Suppress("BooleanLiteralArgument")
+    @Test
+    fun `StringBooleanSerializer works as expected`() {
+        // given
+        @Serializable
+        data class Data(
+            @Serializable(with = StringBooleanSerializer::class) val bool1: Boolean,
+            @Serializable(with = StringBooleanSerializer::class) val bool2: Boolean,
+            @Serializable(with = StringBooleanSerializer::class) val bool3: Boolean,
+            @Serializable(with = StringBooleanSerializer::class) val bool4: Boolean,
+            @Serializable(with = StringBooleanSerializer::class) val bool5: Boolean,
+            @Serializable(with = StringBooleanSerializer::class) val bool6: Boolean
+        )
+
+        val config = ConfigFactory.parseString(
+            """
+            |{
+            |  bool1: "true"
+            |  bool2: "on"
+            |  bool3: "yes"
+            |  bool4: "false"
+            |  bool5: "off"
+            |  bool6: "no"
+            |}
+            """.trimMargin()
+        )
+
+        // when
+        val result = Data.serializer().load(config)
+
+        // then
+        result shouldBe Data(
+            true, true, true,
+            false, false, false
+        )
     }
 }
