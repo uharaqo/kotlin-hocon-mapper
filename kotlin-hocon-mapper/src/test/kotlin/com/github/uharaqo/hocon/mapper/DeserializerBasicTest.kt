@@ -10,30 +10,25 @@ import org.junit.jupiter.api.Test
 
 class DeserializerBasicTest {
 
-    @Serializable
-    private data class Simple(
-        val string: String
-    )
-
     private enum class DataEnum { ELEMENT }
-
-    @Serializable
-    private data class Primitives(
-        val char: Char,
-        val string: String,
-        val bool: Boolean,
-        val byte: Byte,
-        val int: Int,
-        val long: Long,
-        val short: Short,
-        val float: Float,
-        val double: Double,
-        val enum: DataEnum
-    )
 
     @Test
     fun `primitives should be decoded correctly`() {
         // given
+        @Serializable
+        data class Primitives(
+            val char: Char,
+            val string: String,
+            val bool: Boolean,
+            val byte: Byte,
+            val int: Int,
+            val long: Long,
+            val short: Short,
+            val float: Float,
+            val double: Double,
+            val enum: DataEnum
+        )
+
         val config = ConfigFactory.parseString(
             """
             | {
@@ -69,6 +64,7 @@ class DeserializerBasicTest {
 
     @Test
     fun `nested objects can be parsed`() {
+        // given
 
         @Serializable
         data class IntVal(val int: Int)
@@ -76,7 +72,6 @@ class DeserializerBasicTest {
         @Serializable
         data class ObjInObj(val intVal: IntVal)
 
-        // given
         val config = ConfigFactory.parseString("""{intVal: {int: ${Int.MAX_VALUE}}}""")
 
         // when
@@ -89,6 +84,12 @@ class DeserializerBasicTest {
     @Test
     fun `MissingFieldException on missing key`() {
         // given
+
+        @Serializable
+        data class Simple(
+            val string: String
+        )
+
         val config = ConfigFactory.parseString("{}")
 
         // when / then
@@ -99,10 +100,11 @@ class DeserializerBasicTest {
 
     @Test
     fun `MissingFieldException is thrown on missing key even for a nullable field`() {
+        // given
+
         @Serializable
         data class OptionalValue(val optValue: String?)
 
-        // given
         val json = "{}"
 
         // when / then
@@ -113,10 +115,11 @@ class DeserializerBasicTest {
 
     @Test
     fun `default value is used for missing key`() {
+        // given
+
         @Serializable
         data class OptionalValue(val optValue: String = "default")
 
-        // given
         val json = "{}"
 
         // when
@@ -129,6 +132,11 @@ class DeserializerBasicTest {
     @Test
     fun `unknown keys are ignored`() {
         // given
+        @Serializable
+        data class Simple(
+            val string: String
+        )
+
         val config = ConfigFactory.parseString("""{"string": "abc", "unknown": 123}""")
 
         // when
@@ -140,6 +148,7 @@ class DeserializerBasicTest {
 
     @Test
     fun `nested objects can be deserialized`() {
+        // given
         @Serializable
         data class C(val bool: Boolean)
 
@@ -149,7 +158,6 @@ class DeserializerBasicTest {
         @Serializable
         data class A(val b: B)
 
-        // given
         val config = ConfigFactory.parseString("""{b: {c: {bool: true}}}""")
 
         // when

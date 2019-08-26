@@ -9,23 +9,24 @@ class DeserializerListTest {
 
     private enum class DataEnum { ELEMENT }
 
-    @Serializable
-    private data class PrimitiveLists(
-        val char: List<Char>,
-        val string: List<String>,
-        val bool: List<Boolean>,
-        val byte: List<Byte>,
-        val int: List<Int>,
-        val long: List<Long>,
-        val short: List<Short>,
-        val float: List<Float>,
-        val double: List<Double>,
-        val enum: List<DataEnum>
-    )
-
     @Test
     fun `list should be deserialized correctly`() {
         // given
+
+        @Serializable
+        data class PrimitiveLists(
+            val char: List<Char>,
+            val string: List<String>,
+            val bool: List<Boolean>,
+            val byte: List<Byte>,
+            val int: List<Int>,
+            val long: List<Long>,
+            val short: List<Short>,
+            val float: List<Float>,
+            val double: List<Double>,
+            val enum: List<DataEnum>
+        )
+
         val config = ConfigFactory.parseString(
             """
             | {
@@ -61,11 +62,11 @@ class DeserializerListTest {
 
     @Test
     fun `list of lists`() {
+        // given
 
         @Serializable
         data class NestedList(val ints: List<List<Int>>)
 
-        // given
         val config = ConfigFactory.parseString(
             """
             | {
@@ -87,6 +88,7 @@ class DeserializerListTest {
 
     @Test
     fun `list of objects`() {
+        // given
 
         @Serializable
         data class IntValue(val int: Int)
@@ -94,7 +96,6 @@ class DeserializerListTest {
         @Serializable
         data class NestedList(val ints: List<IntValue>)
 
-        // given
         val config = ConfigFactory.parseString(
             """
             | {
