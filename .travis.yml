@@ -9,6 +9,12 @@ os:
 jdk:
   - oraclejdk8
 
+addons:
+  sonarcloud:
+    organization: "uharaqo"
+    token:
+      secure: "ZuP6WjO9fg49GCmTWuIMcBB0/EkDwreQdUpGgXfF47hMlLKU4dEUOTA7Evw0eJZCwvQ8l1c5NW3tkL8SPE5uxvgmKN+0FR8Z8+rMEBQc92zHUcsoKyRO1fs7H2PWcRufJ6IlU9pJlrHZYTrHU3owYCsSp+QzmqxTniRilpUxgjqK0xEDaxzqGG+ZX/mdADi3rE79CJ15BHKiClL++3BbfTDnWPlHowsNstNncoHGJbR1AuUhgSwsxuqxs6Q/Or+GyYiNsnp5qp2+ssn7vSNm3OCKRQ7UXgfOrcn05BeQN8xLq2Ek06LT1MIM0oVYSoH8tgqGkWcMzz7fC6L61TGebt+/7I/EDZ4tthwy3tZtFGq/pZyaEsqnlZR3udpzdFisfr6LgHyE6vgz1Ia1U+I67+0P5z5cNbvTC64cQr8DnRn29/lvqWVi+mXVpnYSBZlLVf4dexJGASnovZQvczyowpcE86Z99HZeTxvEXVJmoV0Y//aNC70pra0puwFw5CxUxC2yGl3avyQgDQIB0ufWROdNVaeWJY0kn3G+uML9sNkzcHxEF1GD8YYxlddbRlY8VHUS7BiCV1NUvsZBIWcym8TMVfw+MWMFZmUtsSs/cKT4Rrj8rSBS6yAqr9HqEbsu2yzg7XJx8AbXWa+eT8AbidAsho2OC+09oRF1N2cl7lw="
+
 before_script:
   - java -version
   - chmod +x gradlew
@@ -18,6 +24,7 @@ script:
   - ./gradlew build
   - ./gradlew dokkaJar javadocJar
   - ./gradlew coverageReport
+  - sonar-scanner
 
 after_script:
   - ls ${JAVA_HOME}
