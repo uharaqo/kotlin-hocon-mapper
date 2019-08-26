@@ -9,31 +9,32 @@ import org.junit.jupiter.api.Test
 
 class DeserializerMapTest {
 
-    @Serializable
-    private data class PrimitiveListsMap(
-        val map: Map<String, PrimitiveLists>
-    )
-
     private enum class DataEnum { ELEMENT }
-
-    @Serializable
-    private data class PrimitiveLists(
-        val char: List<Char>,
-        val string: List<String>,
-        val bool: List<Boolean>,
-        val byte: List<Byte>,
-        val int: List<Int>,
-        val long: List<Long>,
-        val short: List<Short>,
-        val float: List<Float>,
-        val double: List<Double>,
-        val enum: List<DataEnum>,
-        val map: Map<String, String>
-    )
 
     @Test
     fun `map should be deserialized correctly`() {
         // given
+
+        @Serializable
+        data class PrimitiveLists(
+            val char: List<Char>,
+            val string: List<String>,
+            val bool: List<Boolean>,
+            val byte: List<Byte>,
+            val int: List<Int>,
+            val long: List<Long>,
+            val short: List<Short>,
+            val float: List<Float>,
+            val double: List<Double>,
+            val enum: List<DataEnum>,
+            val map: Map<String, String>
+        )
+
+        @Serializable
+        data class PrimitiveListsMap(
+            val map: Map<String, PrimitiveLists>
+        )
+
         val config = ConfigFactory.parseString(
             """
             | {
@@ -76,7 +77,7 @@ class DeserializerMapTest {
         map.float[0] shouldBe Float.MAX_VALUE
         map.double[0] shouldBe Double.MAX_VALUE
         map.enum[0] shouldBe DataEnum.ELEMENT
-        map.map.entries.first() should {e ->
+        map.map.entries.first() should { e ->
             e.key shouldBe "key"
             e.value shouldBe "val"
         }
