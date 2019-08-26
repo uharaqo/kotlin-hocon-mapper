@@ -251,6 +251,19 @@ class DeserializerBasicTest {
             // then
             result shouldBe data
         }
+
+        @DisplayName("Serializer")
+        @ParameterizedTest(name = "[{index}] {0}")
+        @MethodSource("dataProvider")
+        fun <T> serializer(
+            name: String, serializer: KSerializer<T>, data: T, configText: String
+        ) {
+            // when
+            val result = ConfigSerializer.stringify(serializer, data)
+
+            // then
+            result shouldBe configText
+        }
     }
 
     @Nested
