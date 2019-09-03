@@ -21,7 +21,7 @@ before_script:
 
 script:
   - ./gradlew check
-  - ./gradlew build
+  - ./gradlew clean build
   - ./gradlew dokkaJar javadocJar
   - ./gradlew coverageReport
   - sonar-scanner
@@ -32,6 +32,16 @@ after_script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+before_deploy:
+  - ./gradlew generatePomFileForMavenPublication
+
+deploy:
+  provider: script
+  script: ./gradlew bintrayUpload
+  dry-run: false
+  on:
+    branch: master
 
 # configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
 before_cache:

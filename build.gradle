@@ -1,6 +1,3 @@
-group "com.github.uharaqo"
-version "0.0.1"
-
 buildscript {
     repositories {
         jcenter()
@@ -8,20 +5,29 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
+        classpath 'com.palantir:jacoco-coverage:0.4.0'
     }
 }
 
+apply plugin: 'com.palantir.jacoco-full-report'
+
 allprojects {
-    apply plugin: 'kotlin'
-    apply from: "$rootDir/ktlint.gradle"
-    apply plugin: 'jacoco'
-    apply plugin: 'org.jetbrains.dokka'
+    group "com.github.uharaqo.kotlin-hocon-mapper"
+    version "$version"
 
     repositories {
         mavenLocal()
         jcenter()
         mavenCentral()
     }
+}
+
+subprojects {
+
+    apply plugin: 'kotlin'
+    apply from: "$rootDir/ktlint.gradle"
+    apply plugin: 'org.jetbrains.dokka'
+    apply plugin: 'maven-publish'
 
     // compile
     sourceCompatibility = 1.8
@@ -58,6 +64,10 @@ allprojects {
     task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
         classifier 'javadoc'
         from javadoc.destinationDir
+    }
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier 'sources'
+        from sourceSets.main.allSource
     }
 }
 
