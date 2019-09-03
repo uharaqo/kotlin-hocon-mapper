@@ -40,10 +40,8 @@ deploy:
   provider: script
   script: ./gradlew bintrayUpload
   dry-run: false
-#  on:
-#    branch: master
   on:
-    all_branches: true
+    branch: master
 
 # configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
 before_cache:
