@@ -42,6 +42,8 @@ deploy:
   dry-run: false
 #  on:
 #    branch: master
+  on:
+    all_branches: true
 
 # configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
 before_cache:
