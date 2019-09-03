@@ -5,15 +5,16 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.3'
     }
 }
 
 apply plugin: 'kotlinx-serialization'
+apply plugin: 'com.jfrog.bintray'
 
 dependencies {
 
     // kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlin_serialization_version"
 
     // config
@@ -24,4 +25,53 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junit_version"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
     testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.0'
+}
+
+publishing {
+    publications {
+        bintray(MavenPublication) {
+            from components.java
+            artifact javadocJar
+            artifact dokkaJar
+            artifact sourcesJar
+
+            pom.withXml {
+                def node = asNode()
+
+                node.dependencies.'*'.findAll() {
+                    it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
+                        dep.name == it.artifactId.text()
+                    }
+                }.each() {
+                    it.scope*.value = 'compile'
+                }
+
+                def license = node.appendNode("licenses").appendNode("license")
+                license.appendNode("name", "The Apache Software License, Version 2.0")
+                license.appendNode("url", "http://www.apache.org/licenses/LICENSE-2.0.txt")
+                license.appendNode("distribution", "repo")
+            }
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty("bintray_user") ? bintray_user : System.getenv("BINTRAY_USER")
+    key = project.hasProperty("bintray_key") ? bintray_key : System.getenv("BINTRAY_KEY")
+    publications = ["bintray"]
+
+    pkg {
+        repo = "maven"
+        name = "${rootProject.group}.${project.name}"
+        licenses = ["Apache-2.0"]
+
+        desc = "Typesafe Config (HOCON) mapper for Kotlin data object"
+        websiteUrl = "https://github.com/uharaqo/kotlin-hocon-mapper"
+        vcsUrl = websiteUrl + ".git"
+        issueTrackerUrl = websiteUrl + "/issues"
+        labels = ['kotlin', 'hocon', 'config', 'typesafe', 'kotlinx.serialization']
+        version {
+            name = project.version
+        }
+    }
 }
