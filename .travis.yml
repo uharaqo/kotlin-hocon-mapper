@@ -34,11 +34,11 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
-  - ./gradlew :kotlin-hocon-mapper:generatePomFileForMavenPublication
+  - ./gradlew generatePomFileForBintrayPublication
 
 deploy:
   provider: script
-  script: ./gradlew :kotlin-hocon-mapper:bintrayUpload
+  script: ./gradlew bintrayUpload
   dry-run: false
 #  on:
 #    branch: master
