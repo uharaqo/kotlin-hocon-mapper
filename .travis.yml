@@ -34,14 +34,14 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
-  - ./gradlew generatePomFileForMavenPublication
+  - ./gradlew :kotlin-hocon-mapper:generatePomFileForMavenPublication
 
 deploy:
   provider: script
-  script: ./gradlew bintrayUpload
+  script: ./gradlew :kotlin-hocon-mapper:bintrayUpload
   dry-run: false
-  on:
-    branch: master
+#  on:
+#    branch: master
 
 # configure caching (https://docs.travis-ci.com/user/languages/java/#Caching)
 before_cache:
