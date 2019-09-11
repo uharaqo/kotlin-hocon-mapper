@@ -18,21 +18,23 @@ import kotlinx.serialization.internal.EnumDescriptor
 
 class ConfigDecoder(private val config: Config) : ConfigDecoderBase<String>() {
 
-    override fun decodeTaggedNotNullMark(tag: String) = !config.getIsNull(tag)
-
     override fun SerialDescriptor.getTag(index: Int): String {
         val parentTag = currentTagOrNull ?: ""
         val childTag = getElementName(index)
         val path = if (parentTag.isNotEmpty()) "$parentTag.$childTag" else childTag
+
         return path
-            .also { if (!config.hasPath(it)) throw MissingFieldException(it) }
+            // throw an exception when the path is not found
+            .also { if (!config.hasPathOrNull(path)) throw MissingFieldException(path) }
     }
+
+    // check if the value is `null` or not
+    override fun decodeTaggedNotNullMark(tag: String): Boolean = !config.getIsNull(tag)
 
     override fun getValue(tag: String): ConfigValue = config.getValue(tag)
 }
 
-internal class ConfigListDecoder(private val list: List<ConfigValue>) :
-    ConfigDecoderBase<Int>() {
+internal class ConfigListDecoder(private val list: List<ConfigValue>) : ConfigDecoderBase<Int>() {
 
     private var idx = 0
 
@@ -48,6 +50,23 @@ internal class ConfigListDecoder(private val list: List<ConfigValue>) :
 }
 
 abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
+
+    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>) =
+        when (desc.kind) {
+            StructureKind.LIST, UnionKind.POLYMORPHIC ->
+                ConfigListDecoder(getValueAs(currentTag))
+
+            StructureKind.MAP ->
+                ConfigListDecoder(flattenEntries(getValueAs(currentTag)))
+
+            StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED ->
+                if (this is ConfigDecoder)
+                    this
+                else
+                    ConfigDecoder(getValueAs<ConfigObject>(currentTag).toConfig())
+
+            else -> this
+        }
 
     override fun decodeTaggedString(tag: T): String = getText(tag)
     override fun decodeTaggedChar(tag: T) =
@@ -72,35 +91,19 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
     override fun decodeTaggedValue(tag: T): Any = getValue(tag).unwrapped()
 
     private inline fun <reified E : Any> unwrapAs(tag: T, valueType: ConfigValueType): E =
-        getValue(tag).let {
-            if (it.valueType() == valueType)
-                it.unwrapped() as E
-            else
-                throw SerializationException(
-                    "Expected $valueType type but got ${it.valueType()}: " +
-                            "${it.unwrapped()} (${it.origin().description()})"
-                )
-        }
+        getValue(tag)
+            .also {
+                if (it.valueType() != valueType)
+                    throw SerializationException(
+                        "Expected $valueType type but got ${it.valueType()}: " +
+                                "${it.unwrapped()} (${it.origin().description()})"
+                    )
+            }
+            .unwrapped() as E
 
     protected abstract fun getValue(tag: T): ConfigValue
+
     private inline fun <reified E : Any> getValueAs(tag: T): E = getValue(tag) as E
-
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>) =
-        when (desc.kind) {
-            StructureKind.LIST, UnionKind.POLYMORPHIC ->
-                ConfigListDecoder(getValueAs(currentTag))
-
-            StructureKind.MAP ->
-                ConfigListDecoder(flattenEntries(getValueAs(currentTag)))
-
-            StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED ->
-                if (this is ConfigDecoder)
-                    this
-                else
-                    ConfigDecoder(getValueAs<ConfigObject>(currentTag).toConfig())
-
-            else -> this
-        }
 
     private fun flattenEntries(config: Map<String, ConfigValue>): List<ConfigValue> =
         config.entries

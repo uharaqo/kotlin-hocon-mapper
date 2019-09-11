@@ -48,7 +48,7 @@ subprojects {
         useJUnitPlatform()
     }
 
-    // source
+    // documents and sources
     dokka {
         outputFormat = 'html'
         outputDirectory = "$buildDir/kdoc"

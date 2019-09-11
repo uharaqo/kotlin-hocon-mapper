@@ -27,6 +27,9 @@ dependencies {
     testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.0'
 }
 
+description = "Typesafe Config (HOCON) mapper for Kotlin data object"
+def githubUrl = "https://github.com/uharaqo/kotlin-hocon-mapper"
+
 publishing {
     publications {
         bintray(MavenPublication) {
@@ -36,9 +39,10 @@ publishing {
             artifact sourcesJar
 
             pom.withXml {
-                def node = asNode()
+                def root = asNode()
+                root.appendNode("packaging", "jar")
 
-                node.dependencies.'*'.findAll() {
+                root.dependencies.'*'.findAll() {
                     it.scope.text() == 'runtime' && project.configurations.compile.allDependencies.find { dep ->
                         dep.name == it.artifactId.text()
                     }
@@ -46,10 +50,24 @@ publishing {
                     it.scope*.value = 'compile'
                 }
 
-                def license = node.appendNode("licenses").appendNode("license")
+                root.appendNode('name', project.name)
+                root.appendNode('description', project.description)
+                root.appendNode('url', githubUrl)
+
+                def license = root.appendNode("licenses").appendNode("license")
                 license.appendNode("name", "The Apache Software License, Version 2.0")
                 license.appendNode("url", "http://www.apache.org/licenses/LICENSE-2.0.txt")
                 license.appendNode("distribution", "repo")
+
+                def developers = root.appendNode("developer")
+                developers.appendNode("id", "uharaqo")
+                developers.appendNode("name", "uharaqo")
+                developers.appendNode("email", "uharaqo+maven@gmail.com")
+
+                def scm = root.appendNode("scm")
+                scm.appendNode("connection", "scm:git:${githubUrl}.git")
+                scm.appendNode("developerConnection", "scm:git:${githubUrl}.git")
+                scm.appendNode("url", "${githubUrl}/tree/master")
             }
         }
     }
@@ -65,10 +83,9 @@ bintray {
         name = "${rootProject.group}.${project.name}"
         licenses = ["Apache-2.0"]
 
-        desc = "Typesafe Config (HOCON) mapper for Kotlin data object"
-        websiteUrl = "https://github.com/uharaqo/kotlin-hocon-mapper"
-        vcsUrl = websiteUrl + ".git"
-        issueTrackerUrl = websiteUrl + "/issues"
+        desc =
+        vcsUrl = "${githubUrl}.git"
+        issueTrackerUrl = "${githubUrl}/issues"
         labels = ['kotlin', 'hocon', 'config', 'typesafe', 'kotlinx.serialization']
         version {
             name = project.version
