@@ -20,9 +20,9 @@ before_script:
   - chmod +x gradlew
 
 script:
-  - ./gradlew check
-  - ./gradlew clean build
-  - ./gradlew coverageReport
+  - ./gradlew clean ktlint check
+  - ./gradlew build
+  - ./gradlew assemble
   - sonar-scanner
 
 after_script:
@@ -33,7 +33,7 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
-  - ./gradlew dokkaJar javadocJar sourcesJar generatePomFileForBintrayPublication
+  - ./gradlew generatePomFileForBintrayPublication
 
 deploy:
   provider: script
