@@ -59,10 +59,10 @@ publishing {
                 license.appendNode("url", "http://www.apache.org/licenses/LICENSE-2.0.txt")
                 license.appendNode("distribution", "repo")
 
-                def developers = root.appendNode("developer")
-                developers.appendNode("id", "uharaqo")
-                developers.appendNode("name", "uharaqo")
-                developers.appendNode("email", "uharaqo+maven@gmail.com")
+                def developer = root.appendNode("developers").appendNode("developer")
+                developer.appendNode("id", "uharaqo")
+                developer.appendNode("name", "uharaqo")
+                developer.appendNode("email", "uharaqo+maven@gmail.com")
 
                 def scm = root.appendNode("scm")
                 scm.appendNode("connection", "scm:git:${githubUrl}.git")
