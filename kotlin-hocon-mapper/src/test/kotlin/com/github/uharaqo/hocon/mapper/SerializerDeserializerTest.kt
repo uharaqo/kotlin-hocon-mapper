@@ -257,6 +257,7 @@ class SerializerDeserializerTest {
         val result = serializer.stringify(data)
 
         // then
-        result shouldBe configText
+        val replaceSpaces: (String) -> String = { it.replace("\n", "").replace(" ", "") }
+        replaceSpaces.apply { result } shouldBe replaceSpaces.apply { configText }
     }
 }

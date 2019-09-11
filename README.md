@@ -105,7 +105,7 @@ Example usage
 -------------
 Production code
 1. Create a data class with the `@Serializable` annotation
-2. Load config files by using the [Typesafe Config](https://github.com/lightbend/config#standard-behavior) library
+2. [Load config files by using the Typesafe Config](https://github.com/lightbend/config#standard-behavior)
 3. Load the `Config` object into the data class by using the deserializer
 
 Setup the config by temporary code
@@ -134,5 +134,5 @@ Links
   - Kotlin extension functions for Typesafe Config
   - Object mapper: `config.extract<MyData>("path.to.mydata")`
   - Serializer: `MyData("foo", 42).toConfig("path.to.mydata")`
-  - Unfortunately, this project has been inactive since Jan 2019 (as of Oct 2019).
+  - Unfortunately, this project has been inactive since Jan 2019 (as of Sep 2019).
     It didn't work with the latest kotlin reflection library.
