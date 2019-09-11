@@ -69,6 +69,8 @@ subprojects {
         classifier 'sources'
         from sourceSets.main.allSource
     }
+
+    assemble.dependsOn(dokkaJar, javadocJar, sourcesJar)
 }
 
 // coverage
