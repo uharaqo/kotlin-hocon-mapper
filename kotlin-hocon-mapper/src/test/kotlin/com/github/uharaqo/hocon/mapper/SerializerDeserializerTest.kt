@@ -249,7 +249,10 @@ class SerializerDeserializerTest {
     @ParameterizedTest(name = "[{index}] {0}")
     @MethodSource("dataProvider")
     fun <T> deserializer(
-        name: String, serializer: KSerializer<T>, data: T, configText: String
+        name: String,
+        serializer: KSerializer<T>,
+        data: T,
+        configText: String
     ) {
         // given
         val config = ConfigFactory.parseString(configText)
@@ -265,7 +268,10 @@ class SerializerDeserializerTest {
     @ParameterizedTest(name = "[{index}] {0}")
     @MethodSource("dataProvider")
     fun <T> serializer(
-        name: String, serializer: KSerializer<T>, data: T, configText: String
+        name: String,
+        serializer: KSerializer<T>,
+        data: T,
+        configText: String
     ) {
         // when
         val result = serializer.stringify(data)
