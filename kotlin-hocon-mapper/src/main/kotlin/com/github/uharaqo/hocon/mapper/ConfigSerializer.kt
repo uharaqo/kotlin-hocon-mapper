@@ -12,7 +12,7 @@ interface ConfigSerializer {
 
     companion object {
 
-        private val DEFAULT = object : ConfigSerializer {
+        private val DEFAULT_SERIALIZER = object : ConfigSerializer {
 
             @UseExperimental(UnstableDefault::class)
             private val json = Json(
@@ -30,6 +30,8 @@ interface ConfigSerializer {
         }
 
         fun <T> stringify(serializer: KSerializer<T>, data: T): String =
-            DEFAULT.stringify(serializer, data)
+            DEFAULT_SERIALIZER.stringify(serializer, data)
     }
 }
+
+inline fun <T> KSerializer<T>.stringify(data: T) = ConfigSerializer.stringify(this, data)
