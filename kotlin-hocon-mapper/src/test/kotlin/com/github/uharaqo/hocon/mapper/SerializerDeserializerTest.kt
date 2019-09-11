@@ -90,36 +90,16 @@ class SerializerDeserializerTest {
                 listOf(SampleEnum.ELEMENT)
             ),
             """{
-                |  char: [
-                |    a
-                |  ],
-                |  string: [
-                |    abc
-                |  ],
-                |  bool: [
-                |    true
-                |  ],
-                |  byte: [
-                |    1
-                |  ],
-                |  int: [
-                |    ${Int.MAX_VALUE}
-                |  ],
-                |  long: [
-                |    ${Long.MAX_VALUE}
-                |  ],
-                |  short: [
-                |    ${Short.MAX_VALUE}
-                |  ],
-                |  float: [
-                |    ${Float.MAX_VALUE}
-                |  ],
-                |  double: [
-                |    ${Double.MAX_VALUE}
-                |  ],
-                |  enum: [
-                |    ${SampleEnum.ELEMENT}
-                |  ]
+                |  char: [a],
+                |  string: [abc],
+                |  bool: [true],
+                |  byte: [1],
+                |  int: [${Int.MAX_VALUE}],
+                |  long: [${Long.MAX_VALUE}],
+                |  short: [${Short.MAX_VALUE}],
+                |  float: [${Float.MAX_VALUE}],
+                |  double: [${Double.MAX_VALUE}],
+                |  enum: [${SampleEnum.ELEMENT}]
                 |}
                 """.trimMargin()
         ),

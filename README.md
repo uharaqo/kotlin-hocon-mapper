@@ -13,30 +13,30 @@ A lightweight [Typesafe Config](https://github.com/lightbend/config) ([HOCON](ht
 - Provides deserializers based on `kotlinx.serialization`
   - Converts `com.typesafe.config.Config` into a class annotated with `@Serializable`
   - No reflection. Deserializers are generated at compile time.
-- Supports basic types such as `String`, `Boolean`, `Int`, `Long`, `Float`, `Double`, `Enum`, `List`, `Map` and nested objects
+- Supports basic types such as `String`, `Boolean`, `Int`, `Long`, `Float`, `Double`, `Enum`, `List`, `Map` and nested object
 - Supports additional types for [unit conversion](https://github.com/lightbend/config/blob/master/HOCON.md#units-format) such as `Period`, `Duration` and `ConfigMemorySize`
 - Provides JSON serializers to support writing HOCON config (Beta)
 
 Getting Started
 ---------------
 
-- Dependencies:
-  - Gradle
-    ```gradle
-    implementation "com.github.uharaqo.kotlin-hocon-mapper:kotlin-hocon-mapper:$hocon_mapper_version"
-    ```
-  
-  - Maven
-    ```xml
-    <dependency>
-      <groupId>com.github.uharaqo.kotlin-hocon-mapper</groupId>
-      <artifactId>kotlin-hocon-mapper</artifactId>
-      <version>${hocon.mapper.version}</version>
-    </dependency>
-    ```
-- Setup kotlinx.serializer compilation. See [Setup section](https://github.com/Kotlin/kotlinx.serialization#setup) in the kotlinx.serialization repo for details
-  
-- To convert a `Config` object into a data object
+- Gradle
+  ```gradle
+  implementation "com.github.uharaqo.kotlin-hocon-mapper:kotlin-hocon-mapper:$hocon_mapper_version"
+  ```
+
+- Maven
+  ```xml
+  <dependency>
+    <groupId>com.github.uharaqo.kotlin-hocon-mapper</groupId>
+    <artifactId>kotlin-hocon-mapper</artifactId>
+    <version>${hocon.mapper.version}</version>
+  </dependency>
+  ```
+
+- Setup the [kotlinx.serializer compiler plugin](https://github.com/Kotlin/kotlinx.serialization#setup)
+
+- To convert a `Config` object into a data object,
   ```kotlin
   @Serializable
   data class BasicTypes(
@@ -62,7 +62,7 @@ Getting Started
   val obj = BasicTypes.serializer().load(config)
   ```
 
-- To convert additional types for [unit conversion](https://github.com/lightbend/config/blob/master/HOCON.md#units-format)
+- To convert additional types for [unit conversion](https://github.com/lightbend/config/blob/master/HOCON.md#units-format),
   ```kotlin
   // file targeted annotation to enable these deserializers
   @file:UseSerializers(
@@ -83,8 +83,9 @@ Getting Started
   
   val converted = UnitConversion.serializer().load(conf)
   ```
+  More examples can be found in [test code](kotlin-hocon-mapper/src/test/kotlin/com/github/uharaqo/hocon/mapper/SerializerDeserializerTest.kt)
 
-- Serializing a data object into a JSON String
+- To serialize an object into a JSON String (Beta)
   ```kotlin
   val json: String = BasicTypes.serializer().stringify(data)
   // or ConfigSerializer.stringify(BasicTypes.serializer(), data)
@@ -93,12 +94,12 @@ Getting Started
 Deserialization details
 -----------------------
 
-- A `Config` object should provide all the arguments in a constructor
-  - When a key is not found in the `Config`, `MissingFieldException` will be thrown 
-  - `null` can be injected into a nullable argument, but it should be explicitly defined like `{"path.to.prop": null}`)
-  - Default values in a constructor are ignored
-    - [How to handle defaults](https://github.com/lightbend/config#how-to-handle-defaults)
-      explains why we should not define configs in various places
+All the arguments in a constructor should be provided by a `Config` object
+- When a key is not found in the `Config`, `MissingFieldException` will be thrown 
+- `null` can be injected into a nullable argument, but it should be explicitly defined like `{"path.to.prop": null}`)
+- Default values in a constructor are ignored
+  - [How to handle defaults](https://github.com/lightbend/config#how-to-handle-defaults)
+    explains why we should not define configs in various places
 
 Example usage
 -------------
@@ -107,11 +108,10 @@ Production code
 2. Load config files by using the [Typesafe Config](https://github.com/lightbend/config#standard-behavior) library
 3. Load the `Config` object into the data class by using the deserializer
 
-Setup config with a temporary code
+Setup the config by temporary code
 1. Instantiate the class with default values
 2. Generate a JSON with the object by using the serializer
-3. Put the JSON into application.conf
-4. Update the configs if necessary
+3. Put the JSON into a config source such as application.conf
 
 Links
 -----
@@ -132,7 +132,7 @@ Links
 
 - [Config4k](https://github.com/config4k/config4k)
   - Kotlin extension functions for Typesafe Config
-  - Object mapper: e.g. `config.extract<MyData>("path.to.mydata")`
-  - Serializer: e.g. `MyData("foo", 42).toConfig("path.to.mydata")`
+  - Object mapper: `config.extract<MyData>("path.to.mydata")`
+  - Serializer: `MyData("foo", 42).toConfig("path.to.mydata")`
   - Unfortunately, this project has been inactive since Jan 2019 (as of Oct 2019).
     It didn't work with the latest kotlin reflection library.
