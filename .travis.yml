@@ -22,7 +22,6 @@ before_script:
 script:
   - ./gradlew check
   - ./gradlew clean build
-  - ./gradlew dokkaJar javadocJar
   - ./gradlew coverageReport
   - sonar-scanner
 
@@ -34,7 +33,7 @@ after_success:
   - bash <(curl -s https://codecov.io/bash)
 
 before_deploy:
-  - ./gradlew generatePomFileForBintrayPublication
+  - ./gradlew dokkaJar javadocJar sourcesJar generatePomFileForBintrayPublication
 
 deploy:
   provider: script
