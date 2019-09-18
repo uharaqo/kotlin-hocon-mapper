@@ -5,7 +5,6 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
 import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import org.junit.jupiter.api.Test
 
 class MissingKeyDeserializationTest {
@@ -51,7 +50,7 @@ class MissingKeyDeserializationTest {
         val config = ConfigFactory.parseString("{}")
 
         // when // then
-        shouldThrow<SerializationException> { OptionalValue.serializer().load(config) }
+        shouldThrow<MissingFieldException> { OptionalValue.serializer().load(config) }
     }
 
     @Test

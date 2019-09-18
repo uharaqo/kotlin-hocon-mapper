@@ -90,36 +90,16 @@ class SerializerDeserializerTest {
                 listOf(SampleEnum.ELEMENT)
             ),
             """{
-                |  char: [
-                |    a
-                |  ],
-                |  string: [
-                |    abc
-                |  ],
-                |  bool: [
-                |    true
-                |  ],
-                |  byte: [
-                |    1
-                |  ],
-                |  int: [
-                |    ${Int.MAX_VALUE}
-                |  ],
-                |  long: [
-                |    ${Long.MAX_VALUE}
-                |  ],
-                |  short: [
-                |    ${Short.MAX_VALUE}
-                |  ],
-                |  float: [
-                |    ${Float.MAX_VALUE}
-                |  ],
-                |  double: [
-                |    ${Double.MAX_VALUE}
-                |  ],
-                |  enum: [
-                |    ${SampleEnum.ELEMENT}
-                |  ]
+                |  char: [a],
+                |  string: [abc],
+                |  bool: [true],
+                |  byte: [1],
+                |  int: [${Int.MAX_VALUE}],
+                |  long: [${Long.MAX_VALUE}],
+                |  short: [${Short.MAX_VALUE}],
+                |  float: [${Float.MAX_VALUE}],
+                |  double: [${Double.MAX_VALUE}],
+                |  enum: [${SampleEnum.ELEMENT}]
                 |}
                 """.trimMargin()
         ),
@@ -277,6 +257,7 @@ class SerializerDeserializerTest {
         val result = serializer.stringify(data)
 
         // then
-        result shouldBe configText
+        val replaceSpaces: (String) -> String = { it.replace("\n", "").replace(" ", "") }
+        replaceSpaces.apply { result } shouldBe replaceSpaces.apply { configText }
     }
 }

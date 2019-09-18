@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 
-class AdditionalSerializerTest {
+class SerializerTest {
 
     @Test
     fun `if any, default value is used for serializing missing key`() {
