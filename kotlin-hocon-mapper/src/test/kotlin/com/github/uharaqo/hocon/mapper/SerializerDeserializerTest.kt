@@ -6,9 +6,9 @@
 
 package com.github.uharaqo.hocon.mapper
 
-import com.github.uharaqo.hocon.mapper.AdditionalModels.Durations
-import com.github.uharaqo.hocon.mapper.AdditionalModels.MemSizes
-import com.github.uharaqo.hocon.mapper.AdditionalModels.Periods
+import com.github.uharaqo.hocon.mapper.UnitConversionModels.Durations
+import com.github.uharaqo.hocon.mapper.UnitConversionModels.MemSizes
+import com.github.uharaqo.hocon.mapper.UnitConversionModels.Periods
 import com.github.uharaqo.hocon.mapper.BasicModels.BasicTypes
 import com.github.uharaqo.hocon.mapper.BasicModels.SampleEnum
 import com.github.uharaqo.hocon.mapper.BasicModels.SimpleObj

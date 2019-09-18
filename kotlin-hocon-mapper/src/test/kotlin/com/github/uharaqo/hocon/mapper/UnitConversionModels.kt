@@ -12,7 +12,7 @@ import kotlinx.serialization.UseSerializers
 import java.time.Duration
 import java.time.Period
 
-interface AdditionalModels {
+interface UnitConversionModels {
 
     @Serializable
     data class Periods(
