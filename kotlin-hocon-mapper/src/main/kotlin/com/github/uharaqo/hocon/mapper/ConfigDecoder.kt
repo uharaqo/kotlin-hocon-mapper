@@ -95,8 +95,10 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
             .also {
                 if (it.valueType() != valueType)
                     throw SerializationException(
-                        "Expected $valueType type but got ${it.valueType()}: " +
-                                "${it.unwrapped()} (${it.origin().description()})"
+                        "[property name: $tag] type: $valueType was expected, " +
+                                "but received type: ${it.valueType()} " +
+                                "with value: '${it.unwrapped()}'. " +
+                                "(${it.origin().description()})"
                     )
             }
             .unwrapped() as E
