@@ -10,12 +10,12 @@ kotlin-hocon-mapper
 Overview
 --------
 A lightweight [Typesafe Config](https://github.com/lightbend/config) ([HOCON](https://github.com/lightbend/config/blob/master/HOCON.md)) mapper for Kotlin classes based on [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization).
-- Provides deserializers based on `kotlinx.serialization`
-  - Converts `com.typesafe.config.Config` into a class annotated with `@Serializable`
-  - No reflection. Deserializers are generated at compile time.
+- Provides serializers and deserializers based on `kotlinx.serialization`
+  - Deserializers convert `com.typesafe.config.Config` into a class annotated with `@Serializable`
+  - Serializers convert a serializable object into a JSON (Beta: intended to support writing HOCON config during development)
+  - No reflection at runtime. Those serializers and deserializers are generated at compile time.
 - Supports basic types such as `String`, `Boolean`, `Int`, `Long`, `Float`, `Double`, `Enum`, `List`, `Map` and nested object
 - Supports additional types for [unit conversion](https://github.com/lightbend/config/blob/master/HOCON.md#units-format) such as `Period`, `Duration` and `ConfigMemorySize`
-- Provides JSON serializers to support writing HOCON config (Beta)
 
 Getting Started
 ---------------
@@ -23,6 +23,8 @@ Getting Started
 - Gradle
   ```gradle
   implementation "com.github.uharaqo.kotlin-hocon-mapper:kotlin-hocon-mapper:$hocon_mapper_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.12.0"
+  implementation "com.typesafe:config:1.3.4"
   ```
 
 - Maven
@@ -40,24 +42,36 @@ Getting Started
   ```kotlin
   @Serializable
   data class BasicTypes(
-    val char: Char, val string: String, val bool: Boolean,
-    val byte: Byte, val int: Int, val long: Long,
-    val short: Short, val float: Float, val double: Double,
-    val enum: SampleEnum
+      val char: Char, val string: String, val bool: Boolean,
+      val byte: Byte, val int: Int, val long: Long,
+      val short: Short, val float: Float, val double: Double,
+      val enum: BasicModels.SampleEnum, val nullable: String?,
+      val list: List<Int>, val map: Map<String, Int>,
+      val nested: Nested
   )
-  
-  val config: com.typesafe.config.Config =  ConfigFactory.parseString(
-    """
-    basics: {
-      // values have possible types: string, number, object, array, boolean, null
-      string: string
-      number: 123
-      array: [1, 2, 3]
-      boolean: true
-      nullable: null
-      unknown: "not defined in the data object. should be ignored by the parser"
-      }
-    """
+  @Serializable
+  data class Nested(val value: String)
+
+  // Config and ConfigFactory are found in com.typesafe.config package
+  val config: Config = ConfigFactory.parseString(
+      """{
+       |  char: a,
+       |  string: abc,
+       |  bool: true,
+       |  byte: 1,
+       |  int: ${Int.MAX_VALUE},
+       |  long: ${Long.MAX_VALUE},
+       |  short: ${Short.MAX_VALUE},
+       |  float: ${Float.MAX_VALUE},
+       |  double: ${Double.MAX_VALUE},
+       |  enum: ${BasicModels.SampleEnum.ELEMENT}
+       |  nullable: null,
+       |  list: [1, 2, 3]
+       |  map: { first: 1, second: 2}
+       |  nested: { value: nested }
+       |  unknown: "this value is ignored becuase 'unknown' is not defined in the data object"
+       |}
+       """.trimMargin()
   )
   val obj = BasicTypes.serializer().load(config)
   ```
@@ -73,14 +87,23 @@ Getting Started
   
   @Serializable
   data class UnitConversion(
-    val duration: Duration,        // e.g. "10m"  <-> Duration.ofMinutes(10)
-    val period: Period,            // e.g. "1w"   <-> Period.ofWeeks(10)
-    val memSize: ConfigMemorySize, // e.g. "1KiB" <-> ConfigMemorySize.ofBytes(1024)
+    val duration: Duration,        // -> Duration.ofMinutes(10)
+    val period: Period,            // -> Period.ofWeeks(1)
+    val memSize: ConfigMemorySize, // -> ConfigMemorySize.ofBytes(1024)
     // this is another option to enable an additional serializer for a field
     @Serializable(with = StringBooleanSerializer::class)
-    val textBoolean: Boolean       // e.g. "yes"   -> true
+    val textBoolean: Boolean       // -> true
   )
   
+  val config: com.typesafe.config.Config = ConfigFactory.parseString(
+      """{
+       |  duration: 10m
+       |  period: 1w
+       |  memSize: 1KiB
+       |  textBoolean: yes
+       |}
+       """.trimMargin()
+  )
   val converted = UnitConversion.serializer().load(conf)
   ```
   More examples can be found in [test code](kotlin-hocon-mapper/src/test/kotlin/com/github/uharaqo/hocon/mapper/SerializerDeserializerTest.kt)
