@@ -7,11 +7,17 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.3'
     }
+
+    ext.experimentalsEnabled = ["-progressive",
+                                "-Xuse-experimental=kotlinx.serialization.InternalSerializationApi"]
 }
 
 apply plugin: 'kotlinx-serialization'
 apply plugin: 'com.jfrog.bintray'
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { task ->
+    task.kotlinOptions.freeCompilerArgs += experimentalsEnabled
+}
 dependencies {
 
     // kotlin

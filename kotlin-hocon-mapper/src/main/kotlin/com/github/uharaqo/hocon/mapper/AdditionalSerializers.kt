@@ -8,7 +8,6 @@ import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.internal.SerialClassDescImpl
 import java.time.Duration
 import java.time.Period
 
@@ -41,7 +40,7 @@ class PeriodSerializer : CustomConfigSerializer<Period>(DESCRIPTOR) {
         "Period ${this.years}y ${this.months}m ${this.days}d is not convertible"
 
     companion object {
-        private val DESCRIPTOR = SerialClassDescImpl("java.time.Period")
+        private val DESCRIPTOR = SerialDescriptor("java.time.Period")
     }
 }
 
@@ -78,7 +77,7 @@ class DurationSerializer : CustomConfigSerializer<Duration>(DESCRIPTOR) {
     }
 
     companion object {
-        private val DESCRIPTOR = SerialClassDescImpl("java.time.Duration")
+        private val DESCRIPTOR = SerialDescriptor("java.time.Duration")
     }
 }
 
@@ -103,7 +102,7 @@ class ConfigMemorySizeSerializer : CustomConfigSerializer<ConfigMemorySize>(DESC
     companion object {
 
         private val MEMORY_UNITS = arrayOf("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB")
-        private val DESCRIPTOR = SerialClassDescImpl("com.typesafe.config.ConfigMemorySize")
+        private val DESCRIPTOR = SerialDescriptor("com.typesafe.config.ConfigMemorySize")
     }
 }
 
@@ -116,7 +115,7 @@ class StringBooleanSerializer : CustomConfigSerializer<Boolean>(DESCRIPTOR) {
         encoder.encodeBoolean(obj)
 
     companion object {
-        private val DESCRIPTOR = SerialClassDescImpl("kotlin.Boolean")
+        private val DESCRIPTOR = SerialDescriptor("kotlin.Boolean")
     }
 }
 
