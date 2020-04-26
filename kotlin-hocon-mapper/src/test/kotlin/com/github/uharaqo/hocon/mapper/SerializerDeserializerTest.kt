@@ -6,9 +6,6 @@
 
 package com.github.uharaqo.hocon.mapper
 
-import com.github.uharaqo.hocon.mapper.UnitConversionModels.Durations
-import com.github.uharaqo.hocon.mapper.UnitConversionModels.MemSizes
-import com.github.uharaqo.hocon.mapper.UnitConversionModels.Periods
 import com.github.uharaqo.hocon.mapper.BasicModels.BasicTypes
 import com.github.uharaqo.hocon.mapper.BasicModels.SampleEnum
 import com.github.uharaqo.hocon.mapper.BasicModels.SimpleObj
@@ -18,6 +15,9 @@ import com.github.uharaqo.hocon.mapper.CollectionModels.ObjectList
 import com.github.uharaqo.hocon.mapper.CollectionModels.ObjectListMap
 import com.github.uharaqo.hocon.mapper.NestedModels.Inner
 import com.github.uharaqo.hocon.mapper.NestedModels.Outer
+import com.github.uharaqo.hocon.mapper.UnitConversionModels.Durations
+import com.github.uharaqo.hocon.mapper.UnitConversionModels.MemSizes
+import com.github.uharaqo.hocon.mapper.UnitConversionModels.Periods
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigMemorySize
 import io.kotlintest.shouldBe

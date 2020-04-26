@@ -17,6 +17,19 @@ A lightweight [Typesafe Config](https://github.com/lightbend/config) ([HOCON](ht
 - Supports basic types such as `String`, `Boolean`, `Int`, `Long`, `Float`, `Double`, `Enum`, `List`, `Map` and nested object
 - Supports additional types for [unit conversion](https://github.com/lightbend/config/blob/master/HOCON.md#units-format) such as `Period`, `Duration` and `ConfigMemorySize`
 
+Core Dependencies
+-------------
+
+- version 0.9.0: 
+  - kotlin: 1.3.72
+  - kotlinx.serialization: 0.20.0
+  - typesafe.config: 1.4.0
+
+- version 0.1.0: 
+  - kotlin: 1.3.50
+  - kotlinx.serialization: 0.13.0
+  - typesafe.config: 1.3.4
+
 Getting Started
 ---------------
 

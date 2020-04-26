@@ -11,12 +11,12 @@ import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.StructureKind
-import kotlinx.serialization.TaggedDecoder
-import kotlinx.serialization.UnionKind
 import kotlinx.serialization.getElementIndexOrThrow
-import kotlinx.serialization.internal.EnumDescriptor
+import kotlinx.serialization.internal.TaggedDecoder
 
 class ConfigDecoder(private val config: Config) : ConfigDecoderBase<String>() {
+
+    private var idx = 0
 
     override fun SerialDescriptor.getTag(index: Int): String {
         val parentTag = currentTagOrNull ?: ""
@@ -30,6 +30,13 @@ class ConfigDecoder(private val config: Config) : ConfigDecoderBase<String>() {
 
     // check if the value is `null` or not
     override fun decodeTaggedNotNullMark(tag: String): Boolean = !config.getIsNull(tag)
+
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int =
+        (if (idx < descriptor.elementsCount) idx else CompositeDecoder.READ_DONE)
+            .also { idx++ }
+
+    override fun newObjectDecoder(configProvider: () -> Config): ConfigDecoder =
+        if (idx == 0) this else ConfigDecoder(configProvider())
 
     override fun getValue(tag: String): ConfigValue = config.getValue(tag)
 }
@@ -53,26 +60,25 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
 
     override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>) =
         when (desc.kind) {
-            StructureKind.LIST, UnionKind.POLYMORPHIC ->
+            StructureKind.LIST ->
                 ConfigListDecoder(getValueAs(currentTag))
 
             StructureKind.MAP ->
                 ConfigListDecoder(flattenEntries(getValueAs(currentTag)))
 
-            StructureKind.CLASS, UnionKind.OBJECT, UnionKind.SEALED ->
-                if (this is ConfigDecoder)
-                    this
-                else
-                    ConfigDecoder(getValueAs<ConfigObject>(currentTag).toConfig())
+            StructureKind.CLASS, StructureKind.OBJECT ->
+                newObjectDecoder { getValueAs<ConfigObject>(currentTag).toConfig() }
 
             else -> this
         }
+
+    open fun newObjectDecoder(configProvider: () -> Config): ConfigDecoder = ConfigDecoder(configProvider())
 
     override fun decodeTaggedString(tag: T): String = getText(tag)
     override fun decodeTaggedChar(tag: T) =
         getText(tag).firstOrNull() ?: throw SerializationException("$tag is empty")
 
-    override fun decodeTaggedEnum(tag: T, enumDescription: EnumDescriptor) =
+    override fun decodeTaggedEnum(tag: T, enumDescription: SerialDescriptor): Int =
         enumDescription.getElementIndexOrThrow(getText(tag))
 
     override fun decodeTaggedBoolean(tag: T): Boolean =
