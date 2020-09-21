@@ -41,8 +41,6 @@ Getting Started
 - Gradle
   ```gradle
   implementation "com.github.uharaqo.kotlin-hocon-mapper:kotlin-hocon-mapper:$hocon_mapper_version"
-  implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.12.0"
-  implementation "com.typesafe:config:1.3.4"
   ```
 
 - Maven
