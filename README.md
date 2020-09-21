@@ -20,6 +20,11 @@ A lightweight [Typesafe Config](https://github.com/lightbend/config) ([HOCON](ht
 Core Dependencies
 -------------
 
+- version 1.4.10:
+  - kotlin: 1.4.10
+  - kotlinx.serialization: 1.0.0-RC
+  - typesafe.config: 1.4.0
+
 - version 0.9.0: 
   - kotlin: 1.3.72
   - kotlinx.serialization: 0.20.0

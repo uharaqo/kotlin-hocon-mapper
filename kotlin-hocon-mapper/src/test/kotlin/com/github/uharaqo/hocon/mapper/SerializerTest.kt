@@ -17,7 +17,7 @@ class SerializerTest {
         val json = "{}"
 
         // when
-        val result = Json.parse(OptionalValue.serializer(), json)
+        val result = Json.decodeFromString(OptionalValue.serializer(), json)
 
         // then
         result.optValue shouldBe "default"

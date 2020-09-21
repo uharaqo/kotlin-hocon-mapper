@@ -3,7 +3,6 @@ package com.github.uharaqo.hocon.mapper
 import com.typesafe.config.ConfigFactory
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldThrow
-import kotlinx.serialization.MissingFieldException
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.junit.jupiter.api.Nested
@@ -31,7 +30,7 @@ class DeserializationEdgeCaseTest {
             val emptyConfig = ConfigFactory.parseString("{}")
 
             // then
-            shouldThrow<MissingFieldException> { OptionalValue.serializer().load(emptyConfig) }
+            shouldThrow<SerializationException> { OptionalValue.serializer().load(emptyConfig) }
         }
 
         @Test
@@ -55,7 +54,7 @@ class DeserializationEdgeCaseTest {
             val config = ConfigFactory.parseString("{}")
 
             // when / then
-            shouldThrow<MissingFieldException> { BasicModels.SimpleObj.serializer().load(config) }
+            shouldThrow<SerializationException> { BasicModels.SimpleObj.serializer().load(config) }
         }
 
         @Test
@@ -70,7 +69,7 @@ class DeserializationEdgeCaseTest {
             val emptyConfig = ConfigFactory.parseString("{}")
 
             // then
-            shouldThrow<MissingFieldException> { OptionalValue.serializer().load(emptyConfig) }
+            shouldThrow<SerializationException> { OptionalValue.serializer().load(emptyConfig) }
         }
 
         @Test
@@ -82,7 +81,7 @@ class DeserializationEdgeCaseTest {
             val config = ConfigFactory.parseString("{}")
 
             // when // then
-            shouldThrow<MissingFieldException> { OptionalValue.serializer().load(config) }
+            shouldThrow<SerializationException> { OptionalValue.serializer().load(config) }
         }
 
         @Test

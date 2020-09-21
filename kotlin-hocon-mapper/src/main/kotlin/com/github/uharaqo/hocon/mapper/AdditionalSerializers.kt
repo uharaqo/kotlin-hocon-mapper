@@ -3,20 +3,20 @@ package com.github.uharaqo.hocon.mapper
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import com.typesafe.config.ConfigMemorySize
-import kotlinx.serialization.Decoder
-import kotlinx.serialization.Encoder
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialDescriptor
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.time.Duration
 import java.time.Period
 
 class PeriodSerializer : CustomConfigSerializer<Period>(DESCRIPTOR) {
 
-    override fun deserializeConfig(config: Config, key: String): Period =
-        config.getPeriod(key)
+    override fun deserializeConfig(config: Config, key: String): Period = config.getPeriod(key)
 
-    override fun serialize(encoder: Encoder, obj: Period) = encoder.encodeString(obj.convert())
+    override fun serialize(encoder: Encoder, value: Period) = encoder.encodeString(value.convert())
 
     private fun Period.convert(): String = when {
         days > 0 -> {
@@ -40,7 +40,7 @@ class PeriodSerializer : CustomConfigSerializer<Period>(DESCRIPTOR) {
         "Period ${this.years}y ${this.months}m ${this.days}d is not convertible"
 
     companion object {
-        private val DESCRIPTOR = SerialDescriptor("java.time.Period")
+        private val DESCRIPTOR = buildClassSerialDescriptor("java.time.Period")
     }
 }
 
@@ -77,7 +77,7 @@ class DurationSerializer : CustomConfigSerializer<Duration>(DESCRIPTOR) {
     }
 
     companion object {
-        private val DESCRIPTOR = SerialDescriptor("java.time.Duration")
+        private val DESCRIPTOR = buildClassSerialDescriptor("java.time.Duration")
     }
 }
 
@@ -102,7 +102,7 @@ class ConfigMemorySizeSerializer : CustomConfigSerializer<ConfigMemorySize>(DESC
     companion object {
 
         private val MEMORY_UNITS = arrayOf("B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB")
-        private val DESCRIPTOR = SerialDescriptor("com.typesafe.config.ConfigMemorySize")
+        private val DESCRIPTOR = buildClassSerialDescriptor("com.typesafe.config.ConfigMemorySize")
     }
 }
 
@@ -115,7 +115,7 @@ class StringBooleanSerializer : CustomConfigSerializer<Boolean>(DESCRIPTOR) {
         encoder.encodeBoolean(obj)
 
     companion object {
-        private val DESCRIPTOR = SerialDescriptor("kotlin.Boolean")
+        private val DESCRIPTOR = buildClassSerialDescriptor("kotlin.Boolean")
     }
 }
 

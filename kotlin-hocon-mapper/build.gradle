@@ -21,7 +21,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.AbstractKotlinCompile).all { ta
 dependencies {
 
     // kotlin
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlin_serialization_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:$kotlin_serialization_version"
 
     // config
     implementation "com.typesafe:config:$typesafe_config_version"
