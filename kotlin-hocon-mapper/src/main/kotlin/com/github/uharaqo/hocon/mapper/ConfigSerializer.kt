@@ -1,5 +1,6 @@
 package com.github.uharaqo.hocon.mapper
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.json.Json
@@ -10,6 +11,7 @@ interface ConfigSerializer {
 
     companion object {
 
+        @OptIn(ExperimentalSerializationApi::class)
         private val DEFAULT_SERIALIZER = object : ConfigSerializer {
 
             private val json = Json {
@@ -17,13 +19,12 @@ interface ConfigSerializer {
                 ignoreUnknownKeys = true
                 isLenient = true
                 prettyPrint = true
-                unquotedPrint = true
-                indent = "  "
+                prettyPrintIndent = "  "
                 useArrayPolymorphism = true
             }
 
             override fun <T, S : SerializationStrategy<T>> stringify(serializer: S, obj: T) =
-                json.stringify(serializer, obj)
+                json.encodeToString(serializer, obj)
         }
 
         fun <T> stringify(serializer: KSerializer<T>, data: T): String =

@@ -5,15 +5,14 @@ import com.typesafe.config.ConfigObject
 import com.typesafe.config.ConfigValue
 import com.typesafe.config.ConfigValueFactory
 import com.typesafe.config.ConfigValueType
-import kotlinx.serialization.CompositeDecoder
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.MissingFieldException
-import kotlinx.serialization.SerialDescriptor
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.StructureKind
-import kotlinx.serialization.getElementIndexOrThrow
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.internal.TaggedDecoder
 
+@OptIn(ExperimentalSerializationApi::class)
 class ConfigDecoder(private val config: Config) : ConfigDecoderBase<String>() {
 
     private var idx = 0
@@ -25,14 +24,17 @@ class ConfigDecoder(private val config: Config) : ConfigDecoderBase<String>() {
 
         return path
             // throw an exception when the path is not found
-            .also { if (!config.hasPathOrNull(path)) throw MissingFieldException(path) }
+            .also {
+                if (!config.hasPathOrNull(path))
+                    throw SerializationException("Field '$path' is required, but it was missing")
+            }
     }
 
     // check if the value is `null` or not
     override fun decodeTaggedNotNullMark(tag: String): Boolean = !config.getIsNull(tag)
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int =
-        (if (idx < descriptor.elementsCount) idx else CompositeDecoder.READ_DONE)
+        (if (idx < descriptor.elementsCount) idx else CompositeDecoder.DECODE_DONE)
             .also { idx++ }
 
     override fun newObjectDecoder(configProvider: () -> Config): ConfigDecoder =
@@ -47,18 +49,19 @@ internal class ConfigListDecoder(private val list: List<ConfigValue>) : ConfigDe
 
     override fun SerialDescriptor.getTag(index: Int) = index
 
-    override fun decodeCollectionSize(desc: SerialDescriptor) = list.size
+    override fun decodeCollectionSize(descriptor: SerialDescriptor) = list.size
 
-    override fun decodeElementIndex(desc: SerialDescriptor) =
-        (if (idx < list.size) idx else CompositeDecoder.READ_DONE)
+    override fun decodeElementIndex(descriptor: SerialDescriptor) =
+        (if (idx < list.size) idx else CompositeDecoder.DECODE_DONE)
             .also { idx++ }
 
     override fun getValue(tag: Int): ConfigValue = list[tag]
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
 
-    override fun beginStructure(desc: SerialDescriptor, vararg typeParams: KSerializer<*>) =
+    override fun beginStructure(desc: SerialDescriptor) =
         when (desc.kind) {
             StructureKind.LIST ->
                 ConfigListDecoder(getValueAs(currentTag))
@@ -78,8 +81,8 @@ abstract class ConfigDecoderBase<T> : TaggedDecoder<T>() {
     override fun decodeTaggedChar(tag: T) =
         getText(tag).firstOrNull() ?: throw SerializationException("$tag is empty")
 
-    override fun decodeTaggedEnum(tag: T, enumDescription: SerialDescriptor): Int =
-        enumDescription.getElementIndexOrThrow(getText(tag))
+    override fun decodeTaggedEnum(tag: T, enumDescriptor: SerialDescriptor): Int =
+        enumDescriptor.getElementIndex(getText(tag))
 
     override fun decodeTaggedBoolean(tag: T): Boolean =
         unwrapAs(tag, ConfigValueType.BOOLEAN)
